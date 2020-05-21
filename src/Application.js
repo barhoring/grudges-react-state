@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useCallback } from 'react';
 
 import id from 'uuid/v4';
 
@@ -11,7 +11,6 @@ const GRUDGE_ADD = 'GRUDGE_ADD';
 const GRUDGE_FORGIVE = 'GRUDGE_FORGIVE';
 
 const reducer = (state, action) => {
-  debugger;
   // I prefer this over switch statments, easier to re factor
   if (action.type === GRUDGE_ADD) {
     return [
@@ -32,22 +31,28 @@ const reducer = (state, action) => {
 const Application = () => {
   const [grudges, dispatch] = useReducer(reducer, initialState);
 
-  const addGrudge = ({ person, reason }) => {
-    dispatch({
-      type: GRUDGE_ADD,
-      payload: { person, reason, forgiven: false, id: id() }
-    });
-  };
+  // If it gets the same depenndencies it will return the same function reference
+  // This is important for React.memo in New Grudge form
+  // Otherwise with each renader of the Application it will
+  // pass a new addGrudge fucntion and no memoezation will occur
 
-  const toggleForgiveness = (id) => {
-    dispatch({ type: GRUDGE_FORGIVE, payload: { id } });
-    // setGrudges(
-    //   grudges.map((grudge) => {
-    //     if (grudge.id !== id) return grudge;
-    //     return { ...grudge, forgiven: !grudge.forgiven };
-    //   })
-    // );
-  };
+  //The only thing this function is dependant on is dispatch
+  const addGrudge = useCallback(
+    ({ person, reason }) => {
+      dispatch({
+        type: GRUDGE_ADD,
+        payload: { person, reason, forgiven: false, id: id() }
+      });
+    },
+    [dispatch]
+  );
+
+  const toggleForgiveness = useCallback(
+    (id) => {
+      dispatch({ type: GRUDGE_FORGIVE, payload: { id } });
+    },
+    [dispatch]
+  );
 
   return (
     <div className="Application">
