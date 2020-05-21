@@ -12,6 +12,7 @@ const GRUDGE_FORGIVE = 'GRUDGE_FORGIVE';
 
 const reducer = (state, action) => {
   debugger;
+  // I prefer this over switch statments, easier to re factor
   if (action.type === GRUDGE_ADD) {
     return [
       {
@@ -19,6 +20,11 @@ const reducer = (state, action) => {
       },
       ...state
     ];
+  } else if (action.type === GRUDGE_FORGIVE) {
+    return state.map((grudge) => {
+      if (grudge.id !== action.payload.id) return grudge;
+      else return { ...grudge, forgiven: !grudge.forgiven };
+    });
   }
   return state;
 };
@@ -34,6 +40,7 @@ const Application = () => {
   };
 
   const toggleForgiveness = (id) => {
+    dispatch({ type: GRUDGE_FORGIVE, payload: { id } });
     // setGrudges(
     //   grudges.map((grudge) => {
     //     if (grudge.id !== id) return grudge;
